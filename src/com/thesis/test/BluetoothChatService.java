@@ -65,11 +65,11 @@ public class BluetoothChatService {
         mUuids = new ArrayList<UUID>();
         usedUuids = new ArrayList<UUID>();
         // 7 randomly-generated UUIDs. These must match on both server and client.
-        mUuids.add(UUID.fromString("b7746a40-c758-4868-aa19-7ac6b3475dfc"));
-        mUuids.add(UUID.fromString("2d64189d-5a2c-4511-a074-77f199fd0834"));
-        /*mUuids.add(UUID.fromString("e442e09a-51f3-4a7b-91cb-f638491d1412"));
+        /*mUuids.add(UUID.fromString("b7746a40-c758-4868-aa19-7ac6b3475dfc"));
+        mUuids.add(UUID.fromString("2d64189d-5a2c-4511-a074-77f199fd0834"));*/
+        mUuids.add(UUID.fromString("e442e09a-51f3-4a7b-91cb-f638491d1412"));
         mUuids.add(UUID.fromString("a81d6504-4536-49ee-a475-7d96d09439e4"));
-        mUuids.add(UUID.fromString("aa91eab1-d8ad-448e-abdb-95ebba4a9b55"));
+        /*mUuids.add(UUID.fromString("aa91eab1-d8ad-448e-abdb-95ebba4a9b55"));
         mUuids.add(UUID.fromString("4d34da73-d0a4-4f40-ac38-917e0a9dee97"));
         mUuids.add(UUID.fromString("5e14d4df-9c8a-4db7-81e4-c937564c86e0"));*/
     }

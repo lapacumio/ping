@@ -22,6 +22,7 @@ import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
@@ -51,8 +52,7 @@ public class MainActivity extends ActionBarActivity {
 	private static boolean isEnd;
 	private static int sentMsgIndex;
 	
-	private Button pingBtn;
-	private Button resetBtn;
+	private Button pingBtn, resetBtn;
 	private ListView resultLV;
 	SmsManager smsManager;
 	SMSReceiver BR_smsreceiver;

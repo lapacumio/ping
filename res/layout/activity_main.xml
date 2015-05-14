@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/pingBtn"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/clearBtn2"
         android:stackFromBottom="false" >
 
     </ListView>
@@ -35,5 +35,19 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:text="Clear" />
+
+    <EditText
+        android:id="@+id/editText1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/clearBtn2"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/clearBtn2"
+        android:ems="10"
+        android:hint="10m bt wifi sms" >
+
+        <requestFocus />
+    </EditText>
 
 </RelativeLayout>
