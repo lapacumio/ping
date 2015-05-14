@@ -1,6 +1,7 @@
 package com.thesis.test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import android.support.v7.app.ActionBarActivity;
@@ -44,7 +45,7 @@ public class MainActivity extends ActionBarActivity {
     public static final String DEVICE_NAME = "device_name";
     public static final String TOAST = "toast";
 	
-	private static final int MAX_MESSAGE_SIZE = 140; //in Bytes
+	private static final int MAX_MESSAGE_SIZE = 160;
 	private static int TRIALS_NUM = 30;
 	private static boolean isStart;
 	private static boolean isEnd;
@@ -54,6 +55,7 @@ public class MainActivity extends ActionBarActivity {
 	private Button resetBtn;
 	private ListView resultLV;
 	SmsManager smsManager;
+	SMSReceiver BR_smsreceiver;
 	
     // Name of the connected device
     private String mConnectedDeviceName = null;
@@ -109,7 +111,7 @@ public class MainActivity extends ActionBarActivity {
         mChatService = new BluetoothChatService(this, mHandler);
         
         // setup SMS broadcast receiver
-        SMSReceiver BR_smsreceiver = null;
+        BR_smsreceiver = null;
         BR_smsreceiver = new SMSReceiver();
         BR_smsreceiver.setMainActivityHandler(this);
         IntentFilter fltr_smsreceived = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
@@ -122,8 +124,8 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        // Stop the Bluetooth chat services
         if (mChatService != null) mChatService.stop();
+        unregisterReceiver(BR_smsreceiver);
     }
 	
     private void computeResults() {
@@ -154,11 +156,17 @@ public class MainActivity extends ActionBarActivity {
 		}
 		else{
 			// TODO send()
-			sendViaBT(Integer.toString(sentMsgIndex)); // temp
-			sendViaSMS(Integer.toString(sentMsgIndex)); // temp
+			String header = Integer.toString(sentMsgIndex) + 'x';
+			char[] arr = new char[MAX_MESSAGE_SIZE-header.length()];
+			Arrays.fill(arr, '0');
+			String message = header + new String(arr);
+			
+			sendViaBT(message); // temp
+			sendViaSMS(message); // temp
 			long time = System.currentTimeMillis();
 			timeSent.put(sentMsgIndex, time);
 			mResultArrayAdapter.add("Sent "+Integer.toString(sentMsgIndex)+": "+time); // temp
+			mResultArrayAdapter.add("Sent "+message); // temp
 			sentMsgIndex++;
 		}
 	}
@@ -166,9 +174,13 @@ public class MainActivity extends ActionBarActivity {
     private void receive(String message) {
     	if(isStart){
 	    	long time = System.currentTimeMillis();
-	    	// int msgID= // TODO something;
-	    	int msgID = Integer.parseInt(message); // temp
+	    	if(DEBUG) Log.i(TAG, message);
+	    	String stringMsgID = message.split("x")[0];
+	    	if(DEBUG) Log.i(TAG, "Split");
+	    	int msgID = Integer.parseInt(stringMsgID);
+	    	if(DEBUG) Log.i(TAG, "saved ID");
 	    	timeReceived.put(msgID, time);
+	    	if(DEBUG) Log.i(TAG, "Recorded time");
 	    	
 	    	mResultArrayAdapter.add("Received "+msgID+": "+time); // temp
 	    	
@@ -191,6 +203,7 @@ public class MainActivity extends ActionBarActivity {
 		timeSent.clear();
 		timeReceived.clear();
 		RTT.clear();
+		mResultArrayAdapter.clear();
 	}
     
 	/* sending via SMS */
