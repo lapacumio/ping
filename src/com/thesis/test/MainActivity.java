@@ -127,7 +127,7 @@ public class MainActivity extends ActionBarActivity {
     }
 	
     private void computeResults() {
-    	float sum=0;
+    	double sum=0;
     	int receivedPackets =0;
     	for(int i=0; i<TRIALS_NUM; i++){
     		try{ 
@@ -137,14 +137,14 @@ public class MainActivity extends ActionBarActivity {
     		}
     		catch(Exception e){}
     	}
-    	float aveRTT = sum/receivedPackets;
-    	float packetLoss = (1-(receivedPackets/TRIALS_NUM))*100;
+    	double aveRTT = sum/receivedPackets;
+    	double packetLoss = (1-(((double)receivedPackets)/TRIALS_NUM))*100;
     	//int min = TODO
     	//int max = TODO
     	
     	//TODO output result
     	mResultArrayAdapter.add("average RTT: "+String.valueOf(aveRTT));
-    	mResultArrayAdapter.add("packet loss: "+String.valueOf(packetLoss));
+    	mResultArrayAdapter.add("packet loss: "+String.valueOf(packetLoss)+"%");
     }
     
     private void ping() {		
