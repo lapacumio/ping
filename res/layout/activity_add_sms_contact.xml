@@ -16,6 +16,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/button2"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
         android:ems="10"
         android:gravity="clip_vertical"
         android:inputType="textMultiLine" />
