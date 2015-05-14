@@ -155,18 +155,17 @@ public class MainActivity extends ActionBarActivity {
 			return;
 		}
 		else{
-			// TODO send()
 			String header = Integer.toString(sentMsgIndex) + 'x';
 			char[] arr = new char[MAX_MESSAGE_SIZE-header.length()];
 			Arrays.fill(arr, '0');
 			String message = header + new String(arr);
 			
+			// TODO send()
 			sendViaBT(message); // temp
 			sendViaSMS(message); // temp
 			long time = System.currentTimeMillis();
 			timeSent.put(sentMsgIndex, time);
 			mResultArrayAdapter.add("Sent "+Integer.toString(sentMsgIndex)+": "+time); // temp
-			mResultArrayAdapter.add("Sent "+message); // temp
 			sentMsgIndex++;
 		}
 	}
@@ -174,13 +173,9 @@ public class MainActivity extends ActionBarActivity {
     private void receive(String message) {
     	if(isStart){
 	    	long time = System.currentTimeMillis();
-	    	if(DEBUG) Log.i(TAG, message);
 	    	String stringMsgID = message.split("x")[0];
-	    	if(DEBUG) Log.i(TAG, "Split");
 	    	int msgID = Integer.parseInt(stringMsgID);
-	    	if(DEBUG) Log.i(TAG, "saved ID");
 	    	timeReceived.put(msgID, time);
-	    	if(DEBUG) Log.i(TAG, "Recorded time");
 	    	
 	    	mResultArrayAdapter.add("Received "+msgID+": "+time); // temp
 	    	
