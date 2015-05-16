@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -69,8 +70,7 @@ public class MainActivity extends ActionBarActivity {
 	// Variable for computing transmission rate
 	private HashMap<Integer, Long> timeSent;
 	private HashMap<Integer, Long> timeReceived;
-	private HashMap<Integer, Long> RTT;
-	
+	private SparseArray<Long> RTT;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +82,7 @@ public class MainActivity extends ActionBarActivity {
 		smsContacts = new ArrayList<String>();
 		timeSent = new HashMap<Integer,Long>();
 		timeReceived = new HashMap<Integer,Long>();
-		RTT = new HashMap<Integer,Long>();
+		RTT = new SparseArray<Long>();
 		sentMsgIndex = 0;
 		
 		pingBtn = (Button) findViewById(R.id.pingBtn);
@@ -196,6 +196,7 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void returnMsg(String message, Object source) {
+		mResultArrayAdapter.add("Returning "+message.split("x")[0]);
 		if(source instanceof Integer ){
 			//TODO send only to a specified user
 		}
