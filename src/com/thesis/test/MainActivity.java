@@ -90,8 +90,8 @@ public class MainActivity extends ActionBarActivity {
 	private boolean isWifiP2pEnabled = false;
 
 	private WifiP2pDevice device;
-	private String MsgReceived;
-	private int MsgSource;
+	//private String MsgReceived;
+	//private int MsgSource;
 	private int ClientSum;
 	private int ClientNum;
 	//private boolean MsgWAPSent = true;
@@ -865,7 +865,7 @@ public class MainActivity extends ActionBarActivity {
         		ClientNum = buf[1];
         		m.what = 2;
         		return m;
-        	} else {	//Internet Connection Request
+        	}/* else {	//Internet Connection Request
         		//Obtain the url
         		message = new String(buf,0,msg_len,"UTF-8");
         		MsgReceived = message;
@@ -875,7 +875,7 @@ public class MainActivity extends ActionBarActivity {
 
                 m.what = 3;
         		return m;
-        	}
+        	}*/
         } catch(IOException e) {
         	//Catch logic
         	m.what = 0;
@@ -883,8 +883,8 @@ public class MainActivity extends ActionBarActivity {
         }
         
         //Update the received message and source node number
-        MsgReceived = message;
-        MsgSource = (int)java.lang.Math.round((java.lang.Math.log(msg_src)/java.lang.Math.log(2)));
+        String MsgReceived = message;
+        int MsgSource = (int)java.lang.Math.round((java.lang.Math.log(msg_src)/java.lang.Math.log(2)));
         
         //Accumulate the count of received messages
         mReceiver.getWifiPeersInAdhoc().setRcvMsgCnt(mReceiver.getWifiPeersInAdhoc().getRcvMsgCnt()+1);
