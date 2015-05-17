@@ -34,7 +34,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
@@ -48,11 +47,12 @@ public class MainActivity extends ActionBarActivity {
 	private static final int SETTINGS_REQUEST = 0;
 	private static final int ADD_SMS_CONTACT_REQUEST = 1;
 	private static final int CONNECT_BT_DEVICE_REQUEST = 2;
+	protected static final int WIFI_MESSAGE = 1;
+	protected static final int UPDATE_WIFI_CONNS = 2;
 
     // Message types sent from the BluetoothChatService Handler
     public static final int MESSAGE_STATE_CHANGE = 1;
     public static final int MESSAGE_READ = 2;
-    //public static final int MESSAGE_WRITE = 3;
     public static final int MESSAGE_DEVICE_NAME = 4;
     public static final int MESSAGE_TOAST = 5;
 
@@ -61,6 +61,7 @@ public class MainActivity extends ActionBarActivity {
     public static final String TOAST = "toast";
 	
 	private static final int MAX_MESSAGE_SIZE = 160;
+	private static final int MAX_WIFI_CONNS = 5;
 	private static int TRIALS_NUM = 30;
 	private static boolean isStart;
 	private static boolean isEnd;
@@ -88,6 +89,8 @@ public class MainActivity extends ActionBarActivity {
 	private Channel mChannel;
 	private WiFiDirectBroadcastReceiver mReceiver;
 	private boolean isWifiP2pEnabled = false;
+	
+	private boolean[] peer;
 
 	private WifiP2pDevice device;
 	//private String MsgReceived;
@@ -118,9 +121,6 @@ public class MainActivity extends ActionBarActivity {
 	//For message obtained from Internet
 	public String MsgWAP = null;
 	
-	//
-	
-	
 	// Variable for computing transmission rate
 	private HashMap<Integer, Long> timeSent;
 	private HashMap<Integer, Long> timeReceived;
@@ -136,6 +136,7 @@ public class MainActivity extends ActionBarActivity {
 		smsContacts = new ArrayList<String>();
 		timeSent = new HashMap<Integer,Long>();
 		timeReceived = new HashMap<Integer,Long>();
+		peer = new boolean[MAX_WIFI_CONNS+1];
 		RTT = new SparseArray<Long>();
 		sentMsgIndex = 0;
 		
@@ -181,14 +182,6 @@ public class MainActivity extends ActionBarActivity {
     
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
-
-        /*
-        //Initialize the adapter for the listview
-        listItemAdapter = new SimpleAdapter(this,
-            	listItem,R.layout.list_view,
-            	new String[] {"ItemNumber", "ItemMessage"},
-            	new int[] {R.id.ItemNumber,R.id.ItemMessage});
-         */
         
         //Initialize and register the BroadcastReceiver
         mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
@@ -363,14 +356,10 @@ public class MainActivity extends ActionBarActivity {
                 if(DEBUG) Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
                 switch (msg.arg1) {
                 case BluetoothChatService.STATE_CONNECTED:
-                	//titleTV.setText("Connected to");
-                    //titleTV.append(mConnectedDeviceName);
-                    //mConversationArrayAdapter.clear();
                 	Toast.makeText(getApplicationContext(), "Connected",
                             Toast.LENGTH_SHORT).show();
                     break;
                 case BluetoothChatService.STATE_CONNECTING:
-                	//titleTV.setText("Connecting");
                 	Toast.makeText(getApplicationContext(), "Connecting",
                             Toast.LENGTH_SHORT).show();
                 	break;
@@ -378,16 +367,9 @@ public class MainActivity extends ActionBarActivity {
                 case BluetoothChatService.STATE_NONE:
                 	Toast.makeText(getApplicationContext(), "State:  none",
                             Toast.LENGTH_SHORT).show();
-                	//titleTV.setText("Not connected");
                     break;
                 }
                 break;
-            /*case MESSAGE_WRITE:
-                byte[] writeBuf = (byte[]) msg.obj;
-                // construct a string from the buffer
-                String writeMessage = new String(writeBuf);
-                //mConversationArrayAdapter.add("Me:  " + writeMessage);
-                break;*/
             case MESSAGE_READ:
             	Tuple t = (Tuple)msg.obj;
             	byte[] readBuf = (byte[])t.left;
@@ -418,38 +400,18 @@ public class MainActivity extends ActionBarActivity {
     private Handler UIupdate = new Handler () {
 	    public void handleMessage (Message msg) {
 	        //Update the UI
-	    	if(msg.what==1) {		//Show the message on UI
+	    	if(msg.what==WIFI_MESSAGE) {		//Show the message on UI
 	    		//display(MsgReceived);
 	    		//receive(MsgReceived, -1);
 	    		receive((String)msg.obj, msg.arg1);
 	    	}
-            else if(msg.what==2) {//Update check box availability on UI  	
-	    		//Update check box availability
-               
+            else if(msg.what==UPDATE_WIFI_CONNS) {//Update check box availability on UI  	
+	    		
 	    		if(!mReceiver.getWifiPeersInAdhoc().getIsServer()) {
-	    			((CheckBox)findViewById(R.id.checkbox_go)).setEnabled(true);
-	    			//Display the assigned client node ID
-		    		//((TextView)findViewById(R.id.head)).setText("Message History--CT"+Integer.toString(ClientNum));
-	    		} else {
-	    			//Display GO for group owner
-		    		//((TextView)findViewById(R.id.head)).setText("Message History--GO");
+	    			peer[0] = true;
 	    		}
-	    		switch(ClientSum) {
-	    			case 5: ((CheckBox)findViewById(R.id.checkbox_ct5)).setEnabled(true);
-	    			case 4: ((CheckBox)findViewById(R.id.checkbox_ct4)).setEnabled(true);
-	    			case 3: ((CheckBox)findViewById(R.id.checkbox_ct3)).setEnabled(true);
-	    			case 2: ((CheckBox)findViewById(R.id.checkbox_ct2)).setEnabled(true);
-	    			case 1: ((CheckBox)findViewById(R.id.checkbox_ct1)).setEnabled(true);
-	    			default:;
-	    		}
-	    		switch(ClientNum) {
-	    			case 1: ((CheckBox)findViewById(R.id.checkbox_ct1)).setEnabled(false); break;
-	    			case 2: ((CheckBox)findViewById(R.id.checkbox_ct2)).setEnabled(false); break;
-	    			case 3: ((CheckBox)findViewById(R.id.checkbox_ct3)).setEnabled(false); break;
-	    			case 4: ((CheckBox)findViewById(R.id.checkbox_ct4)).setEnabled(false); break;
-	    			case 5: ((CheckBox)findViewById(R.id.checkbox_ct5)).setEnabled(false); break;
-	    			default:;
-	    		}
+	    		peer[ClientSum] = true;
+	    		peer[ClientNum] = false;
 	    	} 
 	    }
 	};
@@ -689,10 +651,8 @@ public class MainActivity extends ActionBarActivity {
     	timer.schedule(new TimerTask() {
     		@Override
     		public void run() {
-    			Message m = MsgRcv();
     			//If a new message received, notify the handler
-    			//Message m = new Message();
-    			//m.what = tmp;
+    			Message m = MsgRcv();
     			UIupdate.sendMessage(m);
     		}
     	},1,1);
@@ -719,11 +679,9 @@ public class MainActivity extends ActionBarActivity {
     	timer.schedule(new TimerTask() {
     		@Override
     		public void run() {
-    			Message m = MsgRcv();
     			//If a new message received, notify the handler
-				//Message m = new Message();
-    			//m.what = tmp;
-    			UIupdate.sendMessage(m);
+    			Message m = MsgRcv();
+    	    	UIupdate.sendMessage(m);
     		}
     	},1,1);
     }
@@ -748,32 +706,12 @@ public class MainActivity extends ActionBarActivity {
         dst_addr = 0;
         //dst_addr = 63;
         
-        //if(((CheckBox)findViewById(R.id.checkbox_go)).isChecked()) {
-        if(((CheckBox)findViewById(R.id.checkbox_go)).isEnabled()) {
-        	dst_addr += 1;
+        for(int i=0; i<=MAX_WIFI_CONNS; i++){
+        	if(peer[i]){ dst_addr += 2^i; }
         }
-        //if(((CheckBox)findViewById(R.id.checkbox_ct1)).isChecked()) {
-        if(((CheckBox)findViewById(R.id.checkbox_ct1)).isEnabled()) {
-        	dst_addr += 2;
-        }
-        //if(((CheckBox)findViewById(R.id.checkbox_ct2)).isChecked()) {
-        if(((CheckBox)findViewById(R.id.checkbox_ct2)).isEnabled()) {
-        	dst_addr += 4;
-        }
-        //if(((CheckBox)findViewById(R.id.checkbox_ct3)).isChecked()) {
-        if(((CheckBox)findViewById(R.id.checkbox_ct3)).isEnabled()) {
-        	dst_addr += 8;
-        }
-        //if(((CheckBox)findViewById(R.id.checkbox_ct4)).isChecked()) {
-        if(((CheckBox)findViewById(R.id.checkbox_ct4)).isEnabled()) {
-        	dst_addr += 16;
-        }
-        //if(((CheckBox)findViewById(R.id.checkbox_ct5)).isChecked()) {
-        if(((CheckBox)findViewById(R.id.checkbox_ct5)).isEnabled()) {
-        	dst_addr += 32;
-        }
+        
         if(dst_addr<=0) {
-        	Toast.makeText(getApplicationContext(), "No Receiver Selected!",
+        	Toast.makeText(getApplicationContext(), "No WiFi conection",
                     Toast.LENGTH_SHORT).show();
         	return;
         }
@@ -799,14 +737,9 @@ public class MainActivity extends ActionBarActivity {
         	//Catch logic
         }
         
-        //Clear the text box
-        //! editText.setText("");
         
         //Accumulate the count of transmitted messages
         mReceiver.getWifiPeersInAdhoc().setTransmitMsgCnt(mReceiver.getWifiPeersInAdhoc().getTransmitMsgCnt()+1);
-        
-        //Get the handle of the list view
-        //! ListView list = (ListView) findViewById(R.id.list_view);
         
         //Fill the data into the Hash map
         HashMap<String, Object> map = new HashMap<String, Object>();  
@@ -816,13 +749,7 @@ public class MainActivity extends ActionBarActivity {
         	map.put("ItemNumber", "CT" + Integer.toString(ClientNum));  
         }
         map.put("ItemMessage", message);  
-        listItem.add(map);  
-        
-        //Display the items
-        //list.setAdapter(listItemAdapter);
-        
-        //Scroll to the bottom
-        //list.setSelection(list.getBottom());
+        listItem.add(map);
     }
     
     //Receive a new message(the returned value 0 for failure, 1 for data message, 2 for protocol message and 3 for Internet message)
@@ -863,19 +790,9 @@ public class MainActivity extends ActionBarActivity {
         	} else if(msg_type==1) {	//Set the availability of check boxes
         		ClientSum = buf[0];
         		ClientNum = buf[1];
-        		m.what = 2;
+        		m.what = UPDATE_WIFI_CONNS;
         		return m;
-        	}/* else {	//Internet Connection Request
-        		//Obtain the url
-        		message = new String(buf,0,msg_len,"UTF-8");
-        		MsgReceived = message;
-        		
-                //Remember who is requesting Internet access
-                MsgSource = (int)java.lang.Math.round((java.lang.Math.log(msg_src)/java.lang.Math.log(2)));
-
-                m.what = 3;
-        		return m;
-        	}*/
+        	}
         } catch(IOException e) {
         	//Catch logic
         	m.what = 0;
@@ -889,7 +806,7 @@ public class MainActivity extends ActionBarActivity {
         //Accumulate the count of received messages
         mReceiver.getWifiPeersInAdhoc().setRcvMsgCnt(mReceiver.getWifiPeersInAdhoc().getRcvMsgCnt()+1);
         
-        m.what = 1;
+        m.what = WIFI_MESSAGE;
         m.arg1 = MsgSource;
         m.obj = MsgReceived;
         return m;
