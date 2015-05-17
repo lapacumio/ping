@@ -12,5 +12,9 @@
         android:title="Add SMS contact"/>
     <item android:id="@+id/scan_for_bt_devices" 
         android:title="Scan for BT devices"/>
+    <item android:id="@+id/discover_wifi_direct_devices" 
+        android:title="Discover WiFi Direct devices "/>
+	<item android:id="@+id/disconnect_wifi_direct_devices" 
+        android:title="Disconnect WiFi Direct devices "/>
     
 </menu>
