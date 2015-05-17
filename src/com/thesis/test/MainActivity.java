@@ -244,7 +244,9 @@ public class MainActivity extends ActionBarActivity {
 	}
     
     private void receive(String message, int source /*WiFi*/) {
-    	if(isStart){ acceptMsg(message); }
+        if(DEBUG) Log.i(TAG, "Received from "+source);
+        mResultArrayAdapter.add("Received from "+source);
+        if(isStart){ acceptMsg(message); }
     	else if(isEnd){ returnMsg(message, (Integer) source); }
     	else{ forwardMsg(message, (Integer) source); }
     }
@@ -418,7 +420,8 @@ public class MainActivity extends ActionBarActivity {
 	        //Update the UI
 	    	if(msg.what==1) {		//Show the message on UI
 	    		//display(MsgReceived);
-	    		receive(MsgReceived, -1);
+	    		//receive(MsgReceived, -1);
+	    		receive((String)msg.obj, msg.arg1);
 	    	}
             else if(msg.what==2) {//Update check box availability on UI  	
 	    		//Update check box availability
@@ -686,13 +689,13 @@ public class MainActivity extends ActionBarActivity {
     	timer.schedule(new TimerTask() {
     		@Override
     		public void run() {
-    			int tmp = MsgRcv();
+    			Message m = MsgRcv();
     			//If a new message received, notify the handler
-    			Message m = new Message();
-    			m.what = tmp;
+    			//Message m = new Message();
+    			//m.what = tmp;
     			UIupdate.sendMessage(m);
     		}
-    	},1000,500);
+    	},1,1);
     }
     
     //Establish pipes between UI thread and Data Rcv thread, start the later thread
@@ -716,13 +719,13 @@ public class MainActivity extends ActionBarActivity {
     	timer.schedule(new TimerTask() {
     		@Override
     		public void run() {
-    			int tmp = MsgRcv();
+    			Message m = MsgRcv();
     			//If a new message received, notify the handler
-				Message m = new Message();
-    			m.what = tmp;
+				//Message m = new Message();
+    			//m.what = tmp;
     			UIupdate.sendMessage(m);
     		}
-    	},1000,500);
+    	},1,1);
     }
     
   //Called when the user clicks the Send button
@@ -823,7 +826,7 @@ public class MainActivity extends ActionBarActivity {
     }
     
     //Receive a new message(the returned value 0 for failure, 1 for data message, 2 for protocol message and 3 for Internet message)
-    public int MsgRcv() {
+    public Message MsgRcv() {
     	
     	//Get the received message
         byte buf[]  = new byte[1024];
@@ -834,6 +837,7 @@ public class MainActivity extends ActionBarActivity {
         int msg_dst;
         int len;
         PipedInputStream pin_rcv = null;
+        Message m = new Message();
         
         try{
         	if(mReceiver.getWifiPeersInAdhoc().getIsServer()) {
@@ -843,7 +847,8 @@ public class MainActivity extends ActionBarActivity {
         	}
         	
         	if(pin_rcv.available()<=0) {
-        		return 0;
+        		m.what = 0;
+        		return m;
         	}
         	msg_len = pin_rcv.read();	//Get the Message Head (message length,head and type not included)
         	msg_type = pin_rcv.read();	//Get the Message Type (0 for data,1 for protocol)
@@ -858,7 +863,8 @@ public class MainActivity extends ActionBarActivity {
         	} else if(msg_type==1) {	//Set the availability of check boxes
         		ClientSum = buf[0];
         		ClientNum = buf[1];
-        		return 2;
+        		m.what = 2;
+        		return m;
         	} else {	//Internet Connection Request
         		//Obtain the url
         		message = new String(buf,0,msg_len,"UTF-8");
@@ -867,11 +873,13 @@ public class MainActivity extends ActionBarActivity {
                 //Remember who is requesting Internet access
                 MsgSource = (int)java.lang.Math.round((java.lang.Math.log(msg_src)/java.lang.Math.log(2)));
 
-                return 3;
+                m.what = 3;
+        		return m;
         	}
         } catch(IOException e) {
         	//Catch logic
-        	return 0;
+        	m.what = 0;
+    		return m;
         }
         
         //Update the received message and source node number
@@ -881,6 +889,9 @@ public class MainActivity extends ActionBarActivity {
         //Accumulate the count of received messages
         mReceiver.getWifiPeersInAdhoc().setRcvMsgCnt(mReceiver.getWifiPeersInAdhoc().getRcvMsgCnt()+1);
         
-        return 1;
+        m.what = 1;
+        m.arg1 = MsgSource;
+        m.obj = MsgReceived;
+        return m;
     }
 }
