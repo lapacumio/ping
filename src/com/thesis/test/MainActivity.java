@@ -130,11 +130,12 @@ public class MainActivity extends ActionBarActivity {
 	
     private void computeResults() {
     	double sum=0;
+    	long rtt=0;
     	int receivedPackets =0;
     	for(int i=0; i<TRIALS_NUM; i++){
     		try{ 
-    			RTT.put(i, timeReceived.get(i)-timeSent.get(i));
-    			sum = sum+RTT.get(i);
+    			rtt = RTT.get(i);
+    			sum = sum+rtt;
     			receivedPackets++;
     		}
     		catch(Exception e){}
@@ -189,10 +190,13 @@ public class MainActivity extends ActionBarActivity {
     	String stringMsgID = message.split("x")[0];
     	int msgID = Integer.parseInt(stringMsgID);
     	timeReceived.put(msgID, time);
+    	mResultArrayAdapter.add("Received "+msgID+": "+time);
+
+    	long rtt = timeReceived.get(msgID)-timeSent.get(msgID);
+		RTT.put(msgID, rtt);
+		mResultArrayAdapter.add("RTT: "+Long.toString(rtt));
     	
-    	mResultArrayAdapter.add("Received "+msgID+": "+time); // temp
-    	
-    	ping(); //send the next iteration;
+		ping(); //send the next iteration;
 	}
 
 	private void returnMsg(String message, Object source) {
