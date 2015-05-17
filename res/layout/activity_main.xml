@@ -45,7 +45,7 @@
         android:layout_alignParentTop="true"
         android:layout_toLeftOf="@+id/clearBtn2"
         android:ems="10"
-        android:hint="10m bt wifi sms" >
+        android:hint="A-10b-B-75w-C" >
 
         <requestFocus />
     </EditText>

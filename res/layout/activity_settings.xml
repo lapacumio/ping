@@ -8,105 +8,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.thesis.test.Settings" >
     
-    <RadioGroup
-        android:id="@+id/channel1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/channelsLabel" >
-
-        <RadioButton
-            android:id="@+id/naRadio1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="NA" />
-        
-        <RadioButton
-            android:id="@+id/btRadio1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="BT" />
-        
-        <RadioButton
-            android:id="@+id/smsRadio1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SMS" />
-
-        <RadioButton
-            android:id="@+id/wifiRadio1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="WiFi" />
-    </RadioGroup>
-    <RadioGroup
-        android:id="@+id/channel2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/channel1"
-        android:layout_toRightOf="@+id/channel1" >
-
-        <RadioButton
-            android:id="@+id/naRadio2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="NA" />
-
-        <RadioButton
-            android:id="@+id/btRadio2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="BT" />
-
-        <RadioButton
-            android:id="@+id/smsRadio2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SMS" />
-
-        <RadioButton
-            android:id="@+id/wifiRadio2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="WiFi" />
-    </RadioGroup>
-
-    <RadioGroup
-        android:id="@+id/channel3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@+id/channel2"
-        android:layout_toRightOf="@+id/channel2" >
-
-        <RadioButton
-            android:id="@+id/naRadio3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="NA" />
-
-        <RadioButton
-            android:id="@+id/btRadio3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="BT" />
-
-        <RadioButton
-            android:id="@+id/smsRadio3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SMS" />
-
-        <RadioButton
-            android:id="@+id/wifiRadio3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="WiFi" />
-    </RadioGroup>
-    
     <Button
         android:id="@+id/saveBtn"
         android:layout_width="wrap_content"
@@ -116,33 +17,6 @@
         android:layout_alignParentRight="true"
         android:minWidth="128dip"
         android:text="Save" />
-
-    <TextView
-        android:id="@+id/channelsLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/receiverCB"
-        android:layout_alignParentTop="true"
-        android:text="Channels 1 2 3"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    <CheckBox
-        android:id="@+id/receiverCB"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:text="Receiver"
-        android:onClick="onCheckboxClicked" />
-
-    <TextView
-        android:id="@+id/trialsLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/receiverCB"
-        android:text="Number of Trials"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <EditText
         android:id="@+id/trialsET"
@@ -154,13 +28,31 @@
         android:ems="10"
         android:inputType="number" />
 
+    <TextView
+        android:id="@+id/trialsLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="Number of Trials"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
     <CheckBox
         android:id="@+id/senderCB"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/receiverCB"
         android:layout_alignParentLeft="true"
-        android:text="Sender"
-        android:onClick="onCheckboxClicked" />
+        android:layout_below="@+id/trialsLabel"
+        android:onClick="onCheckboxClicked"
+        android:text="Sender" />
+
+    <CheckBox
+        android:id="@+id/receiverCB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/senderCB"
+        android:layout_below="@+id/senderCB"
+        android:onClick="onCheckboxClicked"
+        android:text="Receiver" />
     
 </RelativeLayout>
