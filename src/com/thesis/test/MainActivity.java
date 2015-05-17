@@ -95,8 +95,8 @@ public class MainActivity extends ActionBarActivity {
 	private WifiP2pDevice device;
 	//private String MsgReceived;
 	//private int MsgSource;
-	private int ClientSum;
-	private int ClientNum;
+	private int ClientSum=0;
+	private int ClientNum=0;
 	//private boolean MsgWAPSent = true;
 	
 	//Thread and pipes for the client's data exchange
@@ -231,15 +231,15 @@ public class MainActivity extends ActionBarActivity {
 			forwardMsg(message, -1);
 			long time = System.currentTimeMillis();
 			timeSent.put(sentMsgIndex, time);
-			mResultArrayAdapter.add("Sent "+Integer.toString(sentMsgIndex)+": "+time); // temp
+			//mResultArrayAdapter.add("Sent "+Integer.toString(sentMsgIndex)+": "+time); // temp
+			mResultArrayAdapter.add("Sent msgnum = "+Integer.toString(sentMsgIndex)); // temp
 			sentMsgIndex++;
 		}
 	}
     
     private void receive(String message, int source /*WiFi*/) {
-        if(DEBUG) Log.i(TAG, "Received from "+source);
-        mResultArrayAdapter.add("Received from "+source);
-        if(isStart){ acceptMsg(message); }
+    	mResultArrayAdapter.add("Received from "+source);
+    	if(isStart){ acceptMsg(message); }
     	else if(isEnd){ returnMsg(message, (Integer) source); }
     	else{ forwardMsg(message, (Integer) source); }
     }
@@ -259,7 +259,8 @@ public class MainActivity extends ActionBarActivity {
     	String stringMsgID = message.split("x")[0];
     	int msgID = Integer.parseInt(stringMsgID);
     	timeReceived.put(msgID, time);
-    	mResultArrayAdapter.add("Received "+msgID+": "+time);
+    	//mResultArrayAdapter.add("Received "+msgID+": "+time);
+    	mResultArrayAdapter.add("Received msgnum = "+msgID);
 
     	long rtt = timeReceived.get(msgID)-timeSent.get(msgID);
 		RTT.put(msgID, rtt);
@@ -271,8 +272,8 @@ public class MainActivity extends ActionBarActivity {
 	private void returnMsg(String message, Object source) {
 		mResultArrayAdapter.add("Returning "+message.split("x")[0]);
 		if(source instanceof Integer ){
-			//TODO send only to a specified user
-			sendMessage(message);
+			sendViaWiFiSpecific(message, (Integer)source);
+			mResultArrayAdapter.add("Return to "+source);
 		}
 		else if(source instanceof Long){
 			byte[] send = message.getBytes();
@@ -291,20 +292,17 @@ public class MainActivity extends ActionBarActivity {
 
 	private void forwardMsg(String message, Object source) {
 		if(source instanceof Integer ){
-			//TODO sendViaWiFi(message, (Integer)source);
-			sendMessage(message);
+			sendViaWiFi(message, (Integer)source);
 			sendViaBT(message, -1);
 			sendViaSMS(message, "");
 		}
 		else if(source instanceof Long){
-			//sendViaWiFi(message, -1);
-			sendMessage(message);
+			sendViaWiFi(message, -1);
 			sendViaBT(message, (Long) source);
 			sendViaSMS(message, "");
 		}
 		else if(source instanceof String){
-			//sendViaWiFi(message, -1);
-			sendMessage(message);
+			sendViaWiFi(message, -1);
 			sendViaBT(message, -1);
 			sendViaSMS(message, (String)source);
 		}
@@ -686,30 +684,33 @@ public class MainActivity extends ActionBarActivity {
     	},1,1);
     }
     
-  //Called when the user clicks the Send button
-    public void sendMessage(String message) { 
+    public void sendViaWiFiSpecific(String message, int source) {
+    	int dst_addr = (int)Math.pow(2,source);
+    	sendMessage(message, dst_addr);
+    }
+    
+    public void sendViaWiFi(String message, int source) { 
+    	int dst_addr = 0;
+        for(int i=0; i<=MAX_WIFI_CONNS; i++){
+        	if(peer[i] && i!=source && i!=ClientNum){ 
+        		dst_addr = dst_addr + (int)Math.pow(2,i);
+        		mResultArrayAdapter.add("Send to "+i);
+        	}
+        }
+        sendMessage(message, dst_addr);
+    }
+    public void sendMessage(String message, int dst_addr) { 
     	
         //Get the content in the text box
-    	int dst_addr = 0;
     	byte buf[]  = new byte[1024];
 
-        //! EditText editText = (EditText) findViewById(R.id.edit_message);
-        //! String message = editText.getText().toString();
         int len = message.length();
         if(len<=0) {
         	Toast.makeText(getApplicationContext(), "Empty message!",
                     Toast.LENGTH_SHORT).show();
         	return;
         }
-        
-        //Get the destination address from the check boxes
-        dst_addr = 0;
-        //dst_addr = 63;
-        
-        for(int i=0; i<=MAX_WIFI_CONNS; i++){
-        	if(peer[i]){ dst_addr += 2^i; }
-        }
-        
+                
         if(dst_addr<=0) {
         	Toast.makeText(getApplicationContext(), "No WiFi conection",
                     Toast.LENGTH_SHORT).show();
@@ -790,7 +791,8 @@ public class MainActivity extends ActionBarActivity {
         	} else if(msg_type==1) {	//Set the availability of check boxes
         		ClientSum = buf[0];
         		ClientNum = buf[1];
-        		m.what = UPDATE_WIFI_CONNS;
+        		if(DEBUG) Log.i(TAG, "ClientNum = "+ClientNum);
+                m.what = UPDATE_WIFI_CONNS;
         		return m;
         	}
         } catch(IOException e) {
