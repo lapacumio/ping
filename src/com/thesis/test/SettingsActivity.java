@@ -9,6 +9,9 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.Toast;
 
 public class SettingsActivity extends ActionBarActivity {
@@ -19,6 +22,10 @@ public class SettingsActivity extends ActionBarActivity {
 	//Channel 1 Radiogroup
 	//Channel 2
 	//Channel 3
+	private RadioGroup channel1, channel2, channel3;
+	private RadioButton naRadio1, btRadio1, smsRadio1, wifiRadio1;
+	private RadioButton naRadio2, btRadio2, smsRadio2, wifiRadio2;
+	private RadioButton naRadio3, btRadio3, smsRadio3, wifiRadio3;
 	private Button saveBtn;
 	private CheckBox senderCB;
 	private CheckBox receiverCB;
@@ -35,6 +42,42 @@ public class SettingsActivity extends ActionBarActivity {
 		isEnd = intent.getBooleanExtra("isEnd", false);
 		
 		//TODO create view items
+		/*channel1 = (RadioGroup) findViewById(R.id.channel1);
+		channel1.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+				// find which radio button is selected
+				if(checkedId == R.id.naRadio1) {}
+				else if(checkedId == R.id.btRadio1) {}
+				else if(checkedId == R.id.smsRadio1) {}
+				else if(checkedId == R.id.wifiRadio1) {}
+			}
+        });
+
+		channel2 = (RadioGroup) findViewById(R.id.channel2);
+		channel2.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+				// find which radio button is selected
+				if(checkedId == R.id.naRadio2) {}
+				else if(checkedId == R.id.btRadio2) {}
+				else if(checkedId == R.id.smsRadio2) {}
+				else if(checkedId == R.id.wifiRadio2) {}
+			}
+        });
+		
+		channel3 = (RadioGroup) findViewById(R.id.channel3);
+		channel3.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+				// find which radio button is selected
+				if(checkedId == R.id.naRadio3) {}
+				else if(checkedId == R.id.btRadio3) {}
+				else if(checkedId == R.id.smsRadio3) {}
+				else if(checkedId == R.id.wifiRadio3) {}
+			}
+        });*/
+		
 		senderCB = (CheckBox) findViewById(R.id.senderCB);
 		senderCB.setChecked(isStart);
 		receiverCB = (CheckBox) findViewById(R.id.receiverCB);

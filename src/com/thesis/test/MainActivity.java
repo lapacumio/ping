@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -65,8 +66,7 @@ public class MainActivity extends ActionBarActivity {
 	private static boolean isEnd;
 	private static int sentMsgIndex;
 	
-	private Button pingBtn;
-	private Button resetBtn;
+	private Button pingBtn, resetBtn;
 	private ListView resultLV;
 	SmsManager smsManager;
 	SMSReceiver BR_smsreceiver;
@@ -124,7 +124,7 @@ public class MainActivity extends ActionBarActivity {
 	// Variable for computing transmission rate
 	private HashMap<Integer, Long> timeSent;
 	private HashMap<Integer, Long> timeReceived;
-	private HashMap<Integer, Long> RTT;
+	private SparseArray<Long> RTT;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -136,7 +136,7 @@ public class MainActivity extends ActionBarActivity {
 		smsContacts = new ArrayList<String>();
 		timeSent = new HashMap<Integer,Long>();
 		timeReceived = new HashMap<Integer,Long>();
-		RTT = new HashMap<Integer,Long>();
+		RTT = new SparseArray<Long>();
 		sentMsgIndex = 0;
 		
 		pingBtn = (Button) findViewById(R.id.pingBtn);
@@ -205,11 +205,12 @@ public class MainActivity extends ActionBarActivity {
 	
     private void computeResults() {
     	double sum=0;
+    	long rtt=0;
     	int receivedPackets =0;
     	for(int i=0; i<TRIALS_NUM; i++){
     		try{ 
-    			RTT.put(i, timeReceived.get(i)-timeSent.get(i));
-    			sum = sum+RTT.get(i);
+    			rtt = RTT.get(i);
+    			sum = sum+rtt;
     			receivedPackets++;
     		}
     		catch(Exception e){}
@@ -219,7 +220,6 @@ public class MainActivity extends ActionBarActivity {
     	//int min = TODO
     	//int max = TODO
     	
-    	//TODO output result
     	mResultArrayAdapter.add("average RTT: "+String.valueOf(aveRTT));
     	mResultArrayAdapter.add("packet loss: "+String.valueOf(packetLoss)+"%");
     }
@@ -235,10 +235,7 @@ public class MainActivity extends ActionBarActivity {
 			Arrays.fill(arr, '0');
 			String message = header + new String(arr);
 			
-			// TODO send()
-			sendViaBT(message); // temp
-			sendViaSMS(message); // temp
-			sendMessage(message); //temp
+			forwardMsg(message, -1);
 			long time = System.currentTimeMillis();
 			timeSent.put(sentMsgIndex, time);
 			mResultArrayAdapter.add("Sent "+Integer.toString(sentMsgIndex)+": "+time); // temp
@@ -246,32 +243,79 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
     
-    private void receive(String message) {
-    	if(isStart){
-	    	long time = System.currentTimeMillis();
-	    	String stringMsgID = message.split("x")[0];
-	    	int msgID = Integer.parseInt(stringMsgID);
-	    	timeReceived.put(msgID, time);
-	    	
-	    	mResultArrayAdapter.add("Received "+msgID+": "+time); // temp
-	    	
-	    	ping(); //send the next iteration;
-    	}
-    	else if(isEnd){
-    		// TODO send to source
-    		sendViaBT(message); // temp
-    		sendViaSMS(message); // temp
-    		sendMessage(message); //temp
-    	}
-    	else{
-    		// TODO forward
-    		sendViaBT(message); // temp
-    		sendViaSMS(message); // temp
-    		sendMessage(message); //temp
-		}
+    private void receive(String message, int source /*WiFi*/) {
+    	if(isStart){ acceptMsg(message); }
+    	else if(isEnd){ returnMsg(message, (Integer) source); }
+    	else{ forwardMsg(message, (Integer) source); }
+    }
+    private void receive(String message, long source /*Bluetooth*/){
+    	if(isStart){ acceptMsg(message); }
+    	else if(isEnd){ returnMsg(message, (Long) source); } //or should this be 'new Long(source)'
+    	else{ forwardMsg(message, (Long) source); }
+    }
+    private void receive(String message, String source /*SMS*/){
+    	if(isStart){ acceptMsg(message); }
+    	else if(isEnd){ returnMsg(message, source); }
+    	else{ forwardMsg(message, source); }
     }
     
-    private void reset() {
+	private void acceptMsg(String message) {
+    	long time = System.currentTimeMillis();
+    	String stringMsgID = message.split("x")[0];
+    	int msgID = Integer.parseInt(stringMsgID);
+    	timeReceived.put(msgID, time);
+    	mResultArrayAdapter.add("Received "+msgID+": "+time);
+
+    	long rtt = timeReceived.get(msgID)-timeSent.get(msgID);
+		RTT.put(msgID, rtt);
+		mResultArrayAdapter.add("RTT: "+Long.toString(rtt));
+    	
+		ping(); //send the next iteration;
+	}
+
+	private void returnMsg(String message, Object source) {
+		mResultArrayAdapter.add("Returning "+message.split("x")[0]);
+		if(source instanceof Integer ){
+			//TODO send only to a specified user
+			sendMessage(message);
+		}
+		else if(source instanceof Long){
+			byte[] send = message.getBytes();
+		    mChatService.specificWrite(send, (Long)source);
+		}
+		else if(source instanceof String){
+			try{
+				smsManager.sendTextMessage((String)source, null, message, null, null);
+			} catch (Exception ex) {
+				Toast.makeText(getApplicationContext(),"Your sms has failed...",
+						Toast.LENGTH_SHORT).show();
+				ex.printStackTrace();
+			}
+		}
+	}
+
+	private void forwardMsg(String message, Object source) {
+		if(source instanceof Integer ){
+			//TODO sendViaWiFi(message, (Integer)source);
+			sendMessage(message);
+			sendViaBT(message, -1);
+			sendViaSMS(message, "");
+		}
+		else if(source instanceof Long){
+			//sendViaWiFi(message, -1);
+			sendMessage(message);
+			sendViaBT(message, (Long) source);
+			sendViaSMS(message, "");
+		}
+		else if(source instanceof String){
+			//sendViaWiFi(message, -1);
+			sendMessage(message);
+			sendViaBT(message, -1);
+			sendViaSMS(message, (String)source);
+		}
+	}
+
+	private void reset() {
 		sentMsgIndex=0;
 		timeSent.clear();
 		timeReceived.clear();
@@ -280,13 +324,14 @@ public class MainActivity extends ActionBarActivity {
 	}
     
 	/* sending via SMS */
-	private void sendViaSMS(String message){
+	private void sendViaSMS(String message, String source){
 		try {
 			for(String phoneNum : smsContacts){
-				//SmsManager smsManager = SmsManager.getDefault();
-				smsManager.sendTextMessage(phoneNum, null, message, null, null);
-				Toast.makeText(getApplicationContext(), "Your sms has successfully sent!",
-						Toast.LENGTH_SHORT).show();
+				if(!phoneNum.equals(source)){
+					smsManager.sendTextMessage(phoneNum, null, message, null, null);
+					Toast.makeText(getApplicationContext(), "Your sms has successfully sent!",
+							Toast.LENGTH_SHORT).show();
+				}
 			}
 		} catch (Exception ex) {
 			Toast.makeText(getApplicationContext(),"Your sms has failed...",
@@ -297,14 +342,14 @@ public class MainActivity extends ActionBarActivity {
 	
 	/* receiving via SMS */
 	public void receiveSMS(String source, String message){
-    	//TODO what to do with this
-		receive(message);
+    	//TODO skip this function?
+		receive(message, source);
 	}
 	
 	/* sending via BT */
-	private void sendViaBT(String message){
+	private void sendViaBT(String message, long source){
 		byte[] send = message.getBytes();
-	    mChatService.write(send);
+	    mChatService.write(send, source);
 	}
 	
     // The Handler that gets information back from the BluetoothChatService
@@ -342,12 +387,13 @@ public class MainActivity extends ActionBarActivity {
                 //mConversationArrayAdapter.add("Me:  " + writeMessage);
                 break;*/
             case MESSAGE_READ:
-                byte[] readBuf = (byte[]) msg.obj;
+            	Tuple t = (Tuple)msg.obj;
+            	byte[] readBuf = (byte[])t.left;
+            	long source = (Long) t.right;
                 // construct a string from the valid bytes in the buffer
                 String readMessage = new String(readBuf, 0, msg.arg1);
                 if (readMessage.length() > 0) {
-                	//TODO do something with received message
-                	receive(readMessage);
+                	receive(readMessage, source);
                 }
                 break;
             case MESSAGE_DEVICE_NAME:
@@ -372,7 +418,7 @@ public class MainActivity extends ActionBarActivity {
 	        //Update the UI
 	    	if(msg.what==1) {		//Show the message on UI
 	    		//display(MsgReceived);
-	    		receive(MsgReceived);
+	    		receive(MsgReceived, -1);
 	    	}
             else if(msg.what==2) {//Update check box availability on UI  	
 	    		//Update check box availability

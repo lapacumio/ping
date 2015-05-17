@@ -65,11 +65,11 @@ public class BluetoothChatService {
         mUuids = new ArrayList<UUID>();
         usedUuids = new ArrayList<UUID>();
         // 7 randomly-generated UUIDs. These must match on both server and client.
-        mUuids.add(UUID.fromString("b7746a40-c758-4868-aa19-7ac6b3475dfc"));
-        mUuids.add(UUID.fromString("2d64189d-5a2c-4511-a074-77f199fd0834"));
-        /*mUuids.add(UUID.fromString("e442e09a-51f3-4a7b-91cb-f638491d1412"));
+        /*mUuids.add(UUID.fromString("b7746a40-c758-4868-aa19-7ac6b3475dfc"));
+        mUuids.add(UUID.fromString("2d64189d-5a2c-4511-a074-77f199fd0834"));*/
+        mUuids.add(UUID.fromString("e442e09a-51f3-4a7b-91cb-f638491d1412"));
         mUuids.add(UUID.fromString("a81d6504-4536-49ee-a475-7d96d09439e4"));
-        mUuids.add(UUID.fromString("aa91eab1-d8ad-448e-abdb-95ebba4a9b55"));
+        /*mUuids.add(UUID.fromString("aa91eab1-d8ad-448e-abdb-95ebba4a9b55"));
         mUuids.add(UUID.fromString("4d34da73-d0a4-4f40-ac38-917e0a9dee97"));
         mUuids.add(UUID.fromString("5e14d4df-9c8a-4db7-81e4-c937564c86e0"));*/
     }
@@ -200,7 +200,7 @@ public class BluetoothChatService {
      * @param out The bytes to write
      * @see ConnectedThread#write(byte[])
      */
-    public void write(byte[] out) {
+    public void write(byte[] out, long source) {
     	// When writing, try to write out to all connected threads 
     	for (int i = 0; i < mConnThreads.size(); i++) {
     		try {
@@ -212,12 +212,26 @@ public class BluetoothChatService {
                     r = mConnThreads.get(i);
                 }
                 // Perform the write unsynchronized
-                r.write(out);
+                if(r.getId()!=source){ //what if source=null
+                	r.write(out);
+                }
     		} catch (Exception e) {    			
     		}
     	}
     }
-
+    public void specificWrite(byte[] out, long source) {
+    	// When writing, try to write out to all connected threads
+    	for (ConnectedThread r : mConnThreads){
+    		try {
+                synchronized (this) {
+                    if (mState != STATE_CONNECTED) return;
+                }
+                if(r.getId()==source){ 
+                	r.write(out); 
+                }
+    		} catch (Exception e) {}
+    	}
+    }
     /**
      * Indicate that the connection attempt failed and notify the UI Activity.
      */
@@ -413,9 +427,9 @@ public class BluetoothChatService {
                 try {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
-
                     // Send the obtained bytes to the UI Activity
-                    mHandler.obtainMessage(MainActivity.MESSAGE_READ, bytes, -1, buffer)
+                    //mHandler.obtainMessage(MainActivity.MESSAGE_READ, bytes, -1, buffer)
+                    mHandler.obtainMessage(MainActivity.MESSAGE_READ, bytes, -1, new Tuple(buffer, this.getId()))
                             .sendToTarget();
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
