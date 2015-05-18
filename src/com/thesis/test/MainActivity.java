@@ -336,8 +336,14 @@ public class MainActivity extends ActionBarActivity {
 	
 	/* receiving via SMS */
 	public void receiveSMS(String source, String message){
-    	//TODO skip this function?
-		receive(message, source);
+		try{
+			//check if received message is from this app
+			String stringMsgID = message.split("x")[0];
+	    	Integer.parseInt(stringMsgID);
+			receive(message, source);
+		}catch(Exception e){
+			return;
+		}
 	}
 	
 	/* sending via BT */
