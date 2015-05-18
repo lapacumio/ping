@@ -213,8 +213,8 @@ public class MainActivity extends ActionBarActivity {
     	//int min = TODO
     	//int max = TODO
     	
-    	mResultArrayAdapter.add("average RTT: "+String.valueOf(aveRTT));
-    	mResultArrayAdapter.add("packet loss: "+String.valueOf(packetLoss)+"%");
+    	mResultArrayAdapter.add("AVERAGE RTT: "+String.valueOf(aveRTT));
+    	mResultArrayAdapter.add("PACKET LOSS: "+String.valueOf(packetLoss)+"%");
     }
     
     private void ping() {		
@@ -231,14 +231,12 @@ public class MainActivity extends ActionBarActivity {
 			forwardMsg(message, -1);
 			long time = System.currentTimeMillis();
 			timeSent.put(sentMsgIndex, time);
-			//mResultArrayAdapter.add("Sent "+Integer.toString(sentMsgIndex)+": "+time); // temp
 			mResultArrayAdapter.add("Sent msgnum = "+Integer.toString(sentMsgIndex)); // temp
 			sentMsgIndex++;
 		}
 	}
     
     private void receive(String message, int source /*WiFi*/) {
-    	mResultArrayAdapter.add("Received from "+source);
     	if(isStart){ acceptMsg(message); }
     	else if(isEnd){ returnMsg(message, (Integer) source); }
     	else{ forwardMsg(message, (Integer) source); }
@@ -259,12 +257,11 @@ public class MainActivity extends ActionBarActivity {
     	String stringMsgID = message.split("x")[0];
     	int msgID = Integer.parseInt(stringMsgID);
     	timeReceived.put(msgID, time);
-    	//mResultArrayAdapter.add("Received "+msgID+": "+time);
-    	mResultArrayAdapter.add("Received msgnum = "+msgID);
+    	mResultArrayAdapter.add("  Received msgnum = "+msgID);
 
     	long rtt = timeReceived.get(msgID)-timeSent.get(msgID);
 		RTT.put(msgID, rtt);
-		mResultArrayAdapter.add("RTT: "+Long.toString(rtt));
+		mResultArrayAdapter.add("  RTT: "+Long.toString(rtt));
     	
 		ping(); //send the next iteration;
 	}
@@ -273,7 +270,6 @@ public class MainActivity extends ActionBarActivity {
 		mResultArrayAdapter.add("Returning "+message.split("x")[0]);
 		if(source instanceof Integer ){
 			sendViaWiFiSpecific(message, (Integer)source);
-			mResultArrayAdapter.add("Return to "+source);
 		}
 		else if(source instanceof Long){
 			byte[] send = message.getBytes();
@@ -291,21 +287,26 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void forwardMsg(String message, Object source) {
+		String stringSource = "";
 		if(source instanceof Integer ){
 			sendViaWiFi(message, (Integer)source);
 			sendViaBT(message, -1);
 			sendViaSMS(message, "");
+			stringSource = Integer.toString((Integer)source);
 		}
 		else if(source instanceof Long){
 			sendViaWiFi(message, -1);
 			sendViaBT(message, (Long) source);
 			sendViaSMS(message, "");
+			stringSource = Long.toString((Long)source);
 		}
 		else if(source instanceof String){
 			sendViaWiFi(message, -1);
 			sendViaBT(message, -1);
 			sendViaSMS(message, (String)source);
+			stringSource = (String)source;
 		}
+		mResultArrayAdapter.add("Forwarding message from "+stringSource);
 	}
 
 	private void reset() {
@@ -694,7 +695,6 @@ public class MainActivity extends ActionBarActivity {
         for(int i=0; i<=MAX_WIFI_CONNS; i++){
         	if(peer[i] && i!=source && i!=ClientNum){ 
         		dst_addr = dst_addr + (int)Math.pow(2,i);
-        		mResultArrayAdapter.add("Send to "+i);
         	}
         }
         sendMessage(message, dst_addr);
@@ -791,8 +791,7 @@ public class MainActivity extends ActionBarActivity {
         	} else if(msg_type==1) {	//Set the availability of check boxes
         		ClientSum = buf[0];
         		ClientNum = buf[1];
-        		if(DEBUG) Log.i(TAG, "ClientNum = "+ClientNum);
-                m.what = UPDATE_WIFI_CONNS;
+        		m.what = UPDATE_WIFI_CONNS;
         		return m;
         	}
         } catch(IOException e) {
