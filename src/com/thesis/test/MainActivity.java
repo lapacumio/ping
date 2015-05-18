@@ -1,6 +1,10 @@
 package com.thesis.test;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
@@ -24,6 +28,7 @@ import android.net.wifi.p2p.WifiP2pManager;
 import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -34,6 +39,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
@@ -69,6 +75,7 @@ public class MainActivity extends ActionBarActivity {
 	
 	private Button pingBtn, resetBtn;
 	private ListView resultLV;
+	private EditText filenameET;
 	SmsManager smsManager;
 	SMSReceiver BR_smsreceiver;
 	
@@ -155,6 +162,7 @@ public class MainActivity extends ActionBarActivity {
 		resultLV = (ListView) findViewById(R.id.resultLV);
 		mResultArrayAdapter = new ArrayAdapter<String>(this, R.layout.result);
 		resultLV.setAdapter(mResultArrayAdapter);
+		filenameET = (EditText) findViewById(R.id.filenameET);
 		
 		// Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -215,9 +223,39 @@ public class MainActivity extends ActionBarActivity {
     	
     	mResultArrayAdapter.add("AVERAGE RTT: "+String.valueOf(aveRTT));
     	mResultArrayAdapter.add("PACKET LOSS: "+String.valueOf(packetLoss)+"%");
+    	
+    	//Save to file
+    	saveToFile(aveRTT, packetLoss);
     }
     
-    private void ping() {		
+    private void saveToFile(double aveRTT, double packetLoss) {
+	    String root = Environment.getExternalStorageDirectory().toString();
+	    File myDir = new File(root + "/ping_results");
+	    myDir.mkdirs();
+	    String fname = (filenameET.getText()+".txt").replace(' ', '_');
+	    fname.replace(' ', '_');
+	    File file = new File(myDir, fname);
+	    if (file.exists())
+	        file.delete();
+	    try {
+	        FileOutputStream fOut = new FileOutputStream(file);
+	        OutputStreamWriter mOutWriter = new OutputStreamWriter(fOut);
+	        for(int i=0; i<RTT.size(); i++){
+	        	mOutWriter.append(RTT.get(i,-1L)+",");
+	        }
+	        mOutWriter.append("\nAVERAGE RTT: "+String.valueOf(aveRTT));
+	        mOutWriter.append("\nPACKET LOSS: "+String.valueOf(packetLoss)+"%");
+	        mOutWriter.flush();
+	        mOutWriter.close();
+	        fOut.flush();
+	        fOut.close();
+	    }
+	    catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	}
+
+	private void ping() {		
 		if(isStart && sentMsgIndex>=TRIALS_NUM){
 			computeResults();
 			return;
@@ -718,8 +756,8 @@ public class MainActivity extends ActionBarActivity {
         }
                 
         if(dst_addr<=0) {
-        	Toast.makeText(getApplicationContext(), "No WiFi conection",
-                    Toast.LENGTH_SHORT).show();
+        	//Toast.makeText(getApplicationContext(), "No WiFi conection",
+            //        Toast.LENGTH_SHORT).show();
         	return;
         }
         

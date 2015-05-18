@@ -1115,11 +1115,11 @@ containing a value of this type.
         public static final int disconnect_wifi_direct_devices=0x7f05005a;
         public static final int discover_wifi_direct_devices=0x7f050059;
         public static final int dropdown=0x7f05000f;
-        public static final int editText1=0x7f050050;
         public static final int edit_query=0x7f050030;
         public static final int end=0x7f050013;
         public static final int expand_activities_button=0x7f050026;
         public static final int expanded_menu=0x7f05002c;
+        public static final int filenameET=0x7f050050;
         public static final int home=0x7f050014;
         public static final int homeAsUp=0x7f050005;
         public static final int icon=0x7f05002a;
