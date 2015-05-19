@@ -202,6 +202,7 @@ public class MainActivity extends ActionBarActivity {
         super.onDestroy();
         if (mChatService != null) mChatService.stop();
         unregisterReceiver(BR_smsreceiver);
+        disconnectWiFiDirectDevice();
     }
 	
     private void computeResults() {
@@ -490,83 +491,87 @@ public class MainActivity extends ActionBarActivity {
                 discover();
                 return true;
 	        case R.id.disconnect_wifi_direct_devices:
-	            //Kill the timer
-	            timer.cancel();
-	            
-	            //Close the opened threads
-	            if(clientthread!=null) {
-	            	clientthread.interrupt();
-	            	clientthread = null;
-	            }
-	            if(serverthread!=null) {
-	            	serverthread.interrupt();
-	            	serverthread = null;
-	            }
-	            
-	            //Close the opened streams
-	            if(pout_transmit_client!=null) {
-	            	try {
-	    				pout_transmit_client.close();
-	    			} catch (IOException e) {
-	    				//Catch Logic
-	    			}
-	            }
-	            if(pin_transmit_client!=null) {
-	            	try {
-	    				pin_transmit_client.close();
-	    			} catch (IOException e) {
-	    				//Catch Logic
-	    			}
-	            }
-	            if(pout_rcv_client!=null) {
-	            	try {
-	    				pout_rcv_client.close();
-	    			} catch (IOException e) {
-	    				//Catch Logic
-	    			}
-	            }
-	            if(pin_rcv_client!=null) {
-	            	try {
-	    				pin_rcv_client.close();
-	    			} catch (IOException e) {
-	    				//Catch Logic
-	    			}
-	            }
-	            if(pout_transmit_server!=null) {
-	            	try {
-	    				pout_transmit_server.close();
-	    			} catch (IOException e) {
-	    				//Catch Logic
-	    			}
-	            }
-	            if(pin_transmit_server!=null) {
-	            	try {
-	    				pin_transmit_server.close();
-	    			} catch (IOException e) {
-	    				//Catch Logic
-	    			}
-	            }
-	            if(pout_rcv_server!=null) {
-	            	try {
-	    				pout_rcv_server.close();
-	    			} catch (IOException e) {
-	    				//Catch Logic
-	    			}
-	            }
-	            if(pin_rcv_server!=null) {
-	            	try {
-	    				pin_rcv_server.close();
-	    			} catch (IOException e) {
-	    				//Catch Logic
-	    			}
-	            }
-                Toast.makeText(getApplicationContext(), "WiFi Direct successfully disconnected",
-                        Toast.LENGTH_SHORT).show();
+	        	disconnectWiFiDirectDevice();
 	        	return true;    
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
+
+	private void disconnectWiFiDirectDevice() {
+        //Kill the timer
+        timer.cancel();
+        
+        //Close the opened threads
+        if(clientthread!=null) { 
+        	clientthread.interrupt();
+        	clientthread = null;
+        }
+        if(serverthread!=null) {
+        	serverthread.interrupt();
+        	serverthread = null;
+        }
+        
+        //Close the opened streams
+        if(pout_transmit_client!=null) {
+        	try {
+				pout_transmit_client.close();
+			} catch (IOException e) {
+				//Catch Logic
+			}
+        }
+        if(pin_transmit_client!=null) {
+        	try {
+				pin_transmit_client.close();
+			} catch (IOException e) {
+				//Catch Logic
+			}
+        }
+        if(pout_rcv_client!=null) {
+        	try {
+				pout_rcv_client.close();
+			} catch (IOException e) {
+				//Catch Logic
+			}
+        }
+        if(pin_rcv_client!=null) {
+        	try {
+				pin_rcv_client.close();
+			} catch (IOException e) {
+				//Catch Logic
+			}
+        }
+        if(pout_transmit_server!=null) {
+        	try {
+				pout_transmit_server.close();
+			} catch (IOException e) {
+				//Catch Logic
+			}
+        }
+        if(pin_transmit_server!=null) {
+        	try {
+				pin_transmit_server.close();
+			} catch (IOException e) {
+				//Catch Logic
+			}
+        }
+        if(pout_rcv_server!=null) {
+        	try {
+				pout_rcv_server.close();
+			} catch (IOException e) {
+				//Catch Logic
+			}
+        }
+        if(pin_rcv_server!=null) {
+        	try {
+				pin_rcv_server.close();
+			} catch (IOException e) {
+				//Catch Logic
+			}
+        }
+        Toast.makeText(getApplicationContext(), "WiFi Direct successfully disconnected",
+                Toast.LENGTH_SHORT).show();		
+	}
 
 	private void startSettingsActivity() {
 		Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
