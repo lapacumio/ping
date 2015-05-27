@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import android.support.v7.app.ActionBarActivity;
 import android.telephony.SmsManager;
@@ -39,6 +40,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -66,7 +68,7 @@ public class MainActivity extends ActionBarActivity {
     public static final String DEVICE_NAME = "device_name";
     public static final String TOAST = "toast";
 	
-	private static final int MAX_MESSAGE_SIZE = 160;
+	private static int MAX_MESSAGE_SIZE = 160;
 	private static final int MAX_WIFI_CONNS = 5;
 	private static int TRIALS_NUM = 30;
 	private static boolean isStart;
@@ -78,6 +80,8 @@ public class MainActivity extends ActionBarActivity {
 	private EditText filenameET;
 	SmsManager smsManager;
 	SMSReceiver BR_smsreceiver;
+	private CheckBox senderCB;
+	private CheckBox receiverCB;
 	
     // Name of the connected device
     private String mConnectedDeviceName = null;
@@ -147,6 +151,11 @@ public class MainActivity extends ActionBarActivity {
 		RTT = new SparseArray<Long>();
 		sentMsgIndex = 0;
 		
+		senderCB = (CheckBox) findViewById(R.id.isStart);
+		senderCB.setChecked(isStart);
+		receiverCB = (CheckBox) findViewById(R.id.isEnd);
+		receiverCB.setChecked(isEnd);
+		
 		pingBtn = (Button) findViewById(R.id.pingBtn);
 		pingBtn.setOnClickListener(new OnClickListener() {
 			public void onClick(View view){
@@ -203,6 +212,7 @@ public class MainActivity extends ActionBarActivity {
         if (mChatService != null) mChatService.stop();
         unregisterReceiver(BR_smsreceiver);
         disconnectWiFiDirectDevice();
+        unregisterReceiver(mReceiver);
     }
 	
     private void computeResults() {
@@ -228,6 +238,18 @@ public class MainActivity extends ActionBarActivity {
     	//Save to file
     	saveToFile(aveRTT, packetLoss);
     }
+    
+    public void onCheckboxClicked(View view) {
+	    boolean checked = ((CheckBox) view).isChecked();
+		switch(view.getId()) {
+        case(R.id.isEnd):
+            isEnd = checked;
+            break;
+	    case(R.id.isStart):
+	        isStart = checked;
+	        break;
+	    }
+	}
     
     private void saveToFile(double aveRTT, double packetLoss) {
 	    String root = Environment.getExternalStorageDirectory().toString();
@@ -257,6 +279,7 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	private void ping() {		
+		
 		if(isStart && sentMsgIndex>=TRIALS_NUM){
 			computeResults();
 			return;
@@ -266,7 +289,6 @@ public class MainActivity extends ActionBarActivity {
 			char[] arr = new char[MAX_MESSAGE_SIZE-header.length()];
 			Arrays.fill(arr, '0');
 			String message = header + new String(arr);
-			
 			forwardMsg(message, -1);
 			long time = System.currentTimeMillis();
 			timeSent.put(sentMsgIndex, time);
@@ -575,6 +597,7 @@ public class MainActivity extends ActionBarActivity {
 
 	private void startSettingsActivity() {
 		Intent i = new Intent(getApplicationContext(), SettingsActivity.class);
+		i.putExtra("messageSize", MAX_MESSAGE_SIZE);
 		i.putExtra("isStart", isStart);
 		i.putExtra("isEnd", isEnd);
 		//i.putExtra("Trials", TRIALS_NUM);
@@ -597,7 +620,10 @@ public class MainActivity extends ActionBarActivity {
         case(SETTINGS_REQUEST):
         	if(resultCode == RESULT_OK){
 	    		isStart = intent.getBooleanExtra("isStart", false);
+	    		senderCB.setChecked(isStart);
 	    		isEnd = intent.getBooleanExtra("isEnd", false);
+	    		receiverCB.setChecked(isEnd);
+	    		MAX_MESSAGE_SIZE = intent.getIntExtra("messageSize", 0);
     		}
         	else if (resultCode==RESULT_CANCELED){ /* TODO log that there was error*/ }
 	        break;
@@ -694,16 +720,18 @@ public class MainActivity extends ActionBarActivity {
     	} catch(IOException e) {
     		//Catch Logic
     	}
-    	
-    	//Schedule the timer
-    	timer.schedule(new TimerTask() {
-    		@Override
-    		public void run() {
-    			//If a new message received, notify the handler
-    			Message m = MsgRcv();
-    			UIupdate.sendMessage(m);
-    		}
-    	},1,1);
+
+    	Runnable myRunnable = new Runnable(){
+    	     public void run(){
+    	    	while(true){
+	     			Message m = MsgRcv();
+	    	    	UIupdate.sendMessage(m);
+    	    	}
+    	    }
+    	};
+
+    	Thread thread = new Thread(myRunnable);
+    	thread.start();
     }
     
     //Establish pipes between UI thread and Data Rcv thread, start the later thread
@@ -723,15 +751,16 @@ public class MainActivity extends ActionBarActivity {
     		//Catch Logic
     	}
     	
-    	//Schedule the timer
-    	timer.schedule(new TimerTask() {
-    		@Override
-    		public void run() {
-    			//If a new message received, notify the handler
-    			Message m = MsgRcv();
-    	    	UIupdate.sendMessage(m);
-    		}
-    	},1,1);
+    	Runnable myRunnable = new Runnable(){
+    		public void run(){
+    			while(true){
+	    			Message m = MsgRcv();
+		   	    	UIupdate.sendMessage(m);
+    			}
+	   	    }
+	   	};
+	   	Thread thread = new Thread(myRunnable);
+	   	thread.start();
     }
     
     public void sendViaWiFiSpecific(String message, int source) {
@@ -792,14 +821,14 @@ public class MainActivity extends ActionBarActivity {
         mReceiver.getWifiPeersInAdhoc().setTransmitMsgCnt(mReceiver.getWifiPeersInAdhoc().getTransmitMsgCnt()+1);
         
         //Fill the data into the Hash map
-        HashMap<String, Object> map = new HashMap<String, Object>();  
+        /*HashMap<String, Object> map = new HashMap<String, Object>();  
         if(mReceiver.getWifiPeersInAdhoc().getIsServer()) {
         	map.put("ItemNumber", "GO ");
         } else {
         	map.put("ItemNumber", "CT" + Integer.toString(ClientNum));  
         }
         map.put("ItemMessage", message);  
-        listItem.add(map);
+        listItem.add(map);*/
     }
     
     //Receive a new message(the returned value 0 for failure, 1 for data message, 2 for protocol message and 3 for Internet message)

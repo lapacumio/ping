@@ -18,6 +18,7 @@ public class SettingsActivity extends ActionBarActivity {
 
 	private boolean isStart;
 	private boolean isEnd;
+	private int messageSize;
 	
 	//Channel 1 Radiogroup
 	//Channel 2
@@ -29,7 +30,7 @@ public class SettingsActivity extends ActionBarActivity {
 	private Button saveBtn;
 	private CheckBox senderCB;
 	private CheckBox receiverCB;
-	private EditText trialsET;
+	private EditText messageSizeET;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +41,7 @@ public class SettingsActivity extends ActionBarActivity {
 		Intent intent = getIntent();
 		isStart = intent.getBooleanExtra("isStart", false);
 		isEnd = intent.getBooleanExtra("isEnd", false);
+		messageSize = intent.getIntExtra("messageSize", 0);
 		
 		//TODO create view items
 		/*channel1 = (RadioGroup) findViewById(R.id.channel1);
@@ -78,6 +80,8 @@ public class SettingsActivity extends ActionBarActivity {
 			}
         });*/
 		
+		messageSizeET = (EditText) findViewById(R.id.messageSize);
+		messageSizeET.append(Integer.toString(messageSize));
 		senderCB = (CheckBox) findViewById(R.id.senderCB);
 		senderCB.setChecked(isStart);
 		receiverCB = (CheckBox) findViewById(R.id.receiverCB);
@@ -105,6 +109,7 @@ public class SettingsActivity extends ActionBarActivity {
 	
 	private void sendDataToMain() {
 	 	Intent intent = new Intent();
+	 	intent.putExtra("messageSize", Integer.parseInt(messageSizeET.getText().toString()));
 		intent.putExtra("isStart", isStart);
 		intent.putExtra("isEnd", isEnd);
 		setResult(RESULT_OK,intent);

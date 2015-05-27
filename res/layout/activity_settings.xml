@@ -7,7 +7,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.thesis.test.Settings" >
-    
+
     <Button
         android:id="@+id/saveBtn"
         android:layout_width="wrap_content"
@@ -18,34 +18,6 @@
         android:minWidth="128dip"
         android:text="Save" />
 
-    <EditText
-        android:id="@+id/trialsET"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@+id/trialsLabel"
-        android:layout_toRightOf="@+id/trialsLabel"
-        android:ems="10"
-        android:inputType="number" />
-
-    <TextView
-        android:id="@+id/trialsLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:text="Number of Trials"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <CheckBox
-        android:id="@+id/senderCB"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@+id/trialsLabel"
-        android:onClick="onCheckboxClicked"
-        android:text="Sender" />
-
     <CheckBox
         android:id="@+id/receiverCB"
         android:layout_width="wrap_content"
@@ -54,5 +26,27 @@
         android:layout_below="@+id/senderCB"
         android:onClick="onCheckboxClicked"
         android:text="Receiver" />
-    
+
+    <EditText
+        android:id="@+id/messageSize"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:ems="10"
+        android:hint="Message Size"
+        android:inputType="number" >
+
+        <requestFocus />
+    </EditText>
+
+    <CheckBox
+        android:id="@+id/senderCB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/messageSize"
+        android:layout_below="@+id/messageSize"
+        android:onClick="onCheckboxClicked"
+        android:text="Sender" />
+
 </RelativeLayout>
