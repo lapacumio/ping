@@ -419,17 +419,53 @@ public class BluetoothChatService {
 
         public void run() {
             Log.i(TAG, "BEGIN mConnectedThread");
-            byte[] buffer = new byte[1024]; //TODO just trying thiiiis
-            int bytes;
+            byte[] buffer = new byte[1024];
+            int bytesRead, current, len;
 
             // Keep listening to the InputStream while connected
             while (true) {
                 try {
+                	bytesRead=0;
+                	current=0;
+                	//String readMessage = new String();
                     // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
+                    switch(mmInStream.read()){
+	                    case(1):
+	        				len = 160;
+	        				break;
+	        			case(2):
+	        				len = 100;
+	        				break;
+	        			case(3):
+	        				len = 1000;
+	        				break;
+	        			case(4):
+	        				len = 10000;
+	        				break;
+	    				case(5):
+	    					len = 100000;
+	    					break;
+	        			default:
+	        				len = 160;
+	        				break;
+                    }
+                    Log.e(TAG, "len = "+len);
+                    
+                    buffer = new byte[len];
+                    
+                    while(current<len){
+                    	//readMessage = readMessage + new String(buffer, current, bytesRead+current);
+                    	bytesRead = mmInStream.read(buffer, current, buffer.length-current);
+                    	current = current + bytesRead;
+                    	
+                    	/*if(bytesRead>=0){
+                    		current = current + bytesRead;
+                    	}*/
+                    }
                     // Send the obtained bytes to the UI Activity
-                    mHandler.obtainMessage(MainActivity.MESSAGE_READ, bytes, -1, new Tuple(buffer, this.getId()))
+                    mHandler.obtainMessage(MainActivity.MESSAGE_READ, current, -1, new Tuple(buffer, this.getId()))
                             .sendToTarget();
+
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
                     connectionLost();

@@ -333,6 +333,28 @@ public class MainActivity extends ActionBarActivity {
 			sendViaWiFiSpecific(message, (Integer)source);
 		}
 		else if(source instanceof Long){
+			byte[] size = new byte[1];
+			switch(message.length()){
+				case(160):
+					size[0] = (byte) 1;
+					break;
+				case(100):
+					size[0] = (byte) 2;
+					break;
+				case(1000):
+					size[0] = (byte) 3;
+					break;
+				case(10000):
+					size[0] = (byte) 4;
+					break;
+				case(100000):
+					size[0] = (byte) 5;
+					break;
+				default:
+					size[0] = (byte) 0;
+					break;
+			}
+			mChatService.specificWrite(size, (Long)source);
 			byte[] send = message.getBytes();
 		    mChatService.specificWrite(send, (Long)source);
 		}
@@ -409,8 +431,32 @@ public class MainActivity extends ActionBarActivity {
 	
 	/* sending via BT */
 	private void sendViaBT(String message, long source){
+		
+		byte[] size = new byte[1];
+		switch(message.length()){
+			case(160):
+				size[0] = (byte) 1;
+				break;
+			case(100):
+				size[0] = (byte) 2;
+				break;
+			case(1000):
+				size[0] = (byte) 3;
+				break;
+			case(10000):
+				size[0] = (byte) 4;
+				break;
+			case(100000):
+				size[0] = (byte) 5;
+				break;
+			default:
+				size[0] = (byte) 0;
+				break;
+		}
+		mChatService.write(size, source);
+		
 		byte[] send = message.getBytes();
-	    mChatService.write(send, source);
+		mChatService.write(send, source);
 	}
 	
     // The Handler that gets information back from the BluetoothChatService
