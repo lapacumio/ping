@@ -251,6 +251,39 @@ public class MainActivity extends ActionBarActivity {
 	    }
 	}
     
+    private int convertToInt(int size){
+    	switch(size){
+			case(160):
+				return 1;
+			case(100):
+				return 2;
+			case(1000):
+				return 3;
+			case(10000):
+				return 4;
+			case(100000):
+				return 5;
+			default:
+				return size;
+    	}
+    }
+    private int convertToSize(int code){
+    	switch(code){
+        case(1):
+			return 160;
+		case(2):
+			return 100;
+		case(3):
+			return 1000;
+		case(4):
+			return 10000;
+		case(5):
+			return 100000;
+		default:
+			return code;
+    	}
+    }
+    
     private void saveToFile(double aveRTT, double packetLoss) {
 	    String root = Environment.getExternalStorageDirectory().toString();
 	    File myDir = new File(root + "/ping_results");
@@ -846,13 +879,13 @@ public class MainActivity extends ActionBarActivity {
         try{
         	buf = message.getBytes("UTF-8");
         	if(mReceiver.getWifiPeersInAdhoc().getIsServer()) {
-        		pout_transmit_server.write(len);		//Message Head (message length,head and type not included)
+        		pout_transmit_server.write(convertToInt(len));		//Message Head (message length,head and type not included)
         		pout_transmit_server.write(0);			//Message Type (0 for data,1 for protocol)
         		pout_transmit_server.write(0x01);		//Message Source (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
         		pout_transmit_server.write(dst_addr);	//Message Destination (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
 	        	pout_transmit_server.write(buf,0,len);	//Message Body (message content)
         	} else {
-	        	pout_transmit_client.write(len);		//Message Head (message length,head and type not included)
+	        	pout_transmit_client.write(convertToInt(len));		//Message Head (message length,head and type not included)
 	        	pout_transmit_client.write(0);			//Message Type (0 for data,1 for protocol)
 	        	pout_transmit_client.write((int)(java.lang.Math.pow(2,ClientNum)));	//Message Source (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
 	        	pout_transmit_client.write(dst_addr);	//Message Destination (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
@@ -907,6 +940,7 @@ public class MainActivity extends ActionBarActivity {
         	msg_src = pin_rcv.read();	//Get the Message Source (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
         	msg_dst = pin_rcv.read();	//Get the Message Destination (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
         	len = 0;
+        	msg_len = convertToSize(msg_len);
         	while(len<msg_len) {
         		len += pin_rcv.read(buf,len,msg_len-len);	//Get the Message Body (message content)
         	}
