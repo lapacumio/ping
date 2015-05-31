@@ -251,7 +251,7 @@ public class MainActivity extends ActionBarActivity {
 	    }
 	}
     
-    private int convertToInt(int size){
+    /*private int convertToInt(int size){
     	switch(size){
 			case(160):
 				return 1;
@@ -282,7 +282,7 @@ public class MainActivity extends ActionBarActivity {
 		default:
 			return code;
     	}
-    }
+    }*/
     
     private void saveToFile(double aveRTT, double packetLoss) {
 	    String root = Environment.getExternalStorageDirectory().toString();
@@ -367,7 +367,7 @@ public class MainActivity extends ActionBarActivity {
 		}
 		else if(source instanceof Long){
 			byte[] size = new byte[1];
-			size[0] = (byte) convertToInt(message.length());
+			size[0] = (byte) GlobalFunctions.convertToInt(message.length());
 			mChatService.specificWrite(size, (Long)source);
 			byte[] send = message.getBytes();
 		    mChatService.specificWrite(send, (Long)source);
@@ -447,7 +447,7 @@ public class MainActivity extends ActionBarActivity {
 	private void sendViaBT(String message, long source){
 		
 		byte[] size = new byte[1];
-		size[0] = (byte) convertToInt(message.length());
+		size[0] = (byte) GlobalFunctions.convertToInt(message.length());
 		mChatService.write(size, source);
 		
 		byte[] send = message.getBytes();
@@ -841,13 +841,13 @@ public class MainActivity extends ActionBarActivity {
         try{
         	buf = message.getBytes("UTF-8");
         	if(mReceiver.getWifiPeersInAdhoc().getIsServer()) {
-        		pout_transmit_server.write(convertToInt(len));		//Message Head (message length,head and type not included)
+        		pout_transmit_server.write((byte) GlobalFunctions.convertToInt(len));		//Message Head (message length,head and type not included)
         		pout_transmit_server.write(0);			//Message Type (0 for data,1 for protocol)
         		pout_transmit_server.write(0x01);		//Message Source (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
         		pout_transmit_server.write(dst_addr);	//Message Destination (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
 	        	pout_transmit_server.write(buf,0,len);	//Message Body (message content)
         	} else {
-	        	pout_transmit_client.write(convertToInt(len));		//Message Head (message length,head and type not included)
+	        	pout_transmit_client.write((byte) GlobalFunctions.convertToInt(len));		//Message Head (message length,head and type not included)
 	        	pout_transmit_client.write(0);			//Message Type (0 for data,1 for protocol)
 	        	pout_transmit_client.write((int)(java.lang.Math.pow(2,ClientNum)));	//Message Source (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
 	        	pout_transmit_client.write(dst_addr);	//Message Destination (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
@@ -902,9 +902,12 @@ public class MainActivity extends ActionBarActivity {
         	msg_src = pin_rcv.read();	//Get the Message Source (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
         	msg_dst = pin_rcv.read();	//Get the Message Destination (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
         	len = 0;
-        	msg_len = convertToSize(msg_len);
+        	int readBytes = 0;
+        	if(msg_type==0){ msg_len = GlobalFunctions.convertToSize(msg_len); }
         	while(len<msg_len) {
-        		len += pin_rcv.read(buf,len,msg_len-len);	//Get the Message Body (message content)
+        		Log.i(TAG, "received it! "+len + "_" + msg_len);
+        		readBytes = pin_rcv.read(buf,len,msg_len-len);
+        		len = len + readBytes;	//Get the Message Body (message content)
         	}
         	if(msg_type==0) {			//Judge the message type; store it into message if it is a data frame
         		message = new String(buf,0,msg_len,"UTF-8");

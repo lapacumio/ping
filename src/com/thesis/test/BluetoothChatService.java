@@ -429,27 +429,8 @@ public class BluetoothChatService {
                 	current=0;
                 	//String readMessage = new String();
                     // Read from the InputStream
-                    switch(mmInStream.read()){
-	                    case(1):
-	        				len = 160;
-	        				break;
-	        			case(2):
-	        				len = 100;
-	        				break;
-	        			case(3):
-	        				len = 1000;
-	        				break;
-	        			case(4):
-	        				len = 10000;
-	        				break;
-	    				case(5):
-	    					len = 100000;
-	    					break;
-	        			default:
-	        				len = 160;
-	        				break;
-                    }
-                    Log.e(TAG, "len = "+len);
+                	len = GlobalFunctions.convertToSize(mmInStream.read());
+                    Log.e(TAG, "len = "+len); //TODO remove this tag
                     
                     buffer = new byte[len];
                     
