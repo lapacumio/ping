@@ -61,26 +61,27 @@ public class RoutingThread extends Thread {
 	        	msg_dst = in.read();	
 	        	addr = msg_dst;
 	        	len = 0;
-	        	if(msg_type==0){ msg_len = GlobalFunctions.convertToInt(msg_len); }
-	        	while(len<msg_len) {
-	        		len += in.read(buf,len,msg_len-len);	//Get the Message Body (message content)
+	        	
+	        	if(msg_type==0){ buf = new byte[GlobalFunctions.convertToSize(msg_len)]; }
+	        	else if (msg_type==1){ buf = new byte[msg_len]; }
+	        	
+	        	while(len<buf.length) {
+	        		len += in.read(buf,len,buf.length-len);	//Get the Message Body (message content)
 	        	}
 	        	for(i=0;i<ConnectLimit+1;i++) {
 	        		tmp = addr & (0x01);
 		        	if((tmp==0x01)&&i==0) {	//Get the destination; forward it to the corresponding pipe
-		        		if(msg_type==0){ out_ui.write(GlobalFunctions.convertToInt(msg_len)); }
-		        		else{ out_ui.write(msg_len); }
+		        		out_ui.write(msg_len);
 		        		out_ui.write(msg_type);
 		        		out_ui.write(msg_src);
 		        		out_ui.write(msg_dst);
-		        		out_ui.write(buf,0,msg_len);
+		        		out_ui.write(buf);
 		        	} else if((tmp==0x01)&&i>0) {
-		        		if(msg_type==0){ out_transmit_ct[i-1].write(GlobalFunctions.convertToInt(msg_len)); }
-		        		else{ out_transmit_ct[i-1].write(msg_len); }
+		        		out_transmit_ct[i-1].write(msg_len);
 		        		out_transmit_ct[i-1].write(msg_type);
 		        		out_transmit_ct[i-1].write(msg_src);
 		        		out_transmit_ct[i-1].write(msg_dst);
-		        		out_transmit_ct[i-1].write(buf,0,msg_len);
+		        		out_transmit_ct[i-1].write(buf);
 		        	}
 		        	addr = addr>>1;
 	        	}

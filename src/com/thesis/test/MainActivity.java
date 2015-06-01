@@ -841,17 +841,17 @@ public class MainActivity extends ActionBarActivity {
         try{
         	buf = message.getBytes("UTF-8");
         	if(mReceiver.getWifiPeersInAdhoc().getIsServer()) {
-        		pout_transmit_server.write((byte) GlobalFunctions.convertToInt(len));		//Message Head (message length,head and type not included)
+        		pout_transmit_server.write(GlobalFunctions.convertToInt(len));		//Message Head (message length,head and type not included)
         		pout_transmit_server.write(0);			//Message Type (0 for data,1 for protocol)
         		pout_transmit_server.write(0x01);		//Message Source (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
         		pout_transmit_server.write(dst_addr);	//Message Destination (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
-	        	pout_transmit_server.write(buf,0,len);	//Message Body (message content)
+	        	pout_transmit_server.write(buf);	//Message Body (message content)
         	} else {
-	        	pout_transmit_client.write((byte) GlobalFunctions.convertToInt(len));		//Message Head (message length,head and type not included)
+	        	pout_transmit_client.write(GlobalFunctions.convertToInt(len));		//Message Head (message length,head and type not included)
 	        	pout_transmit_client.write(0);			//Message Type (0 for data,1 for protocol)
 	        	pout_transmit_client.write((int)(java.lang.Math.pow(2,ClientNum)));	//Message Source (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
 	        	pout_transmit_client.write(dst_addr);	//Message Destination (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
-	        	pout_transmit_client.write(buf,0,len);	//Message Body (message content)
+	        	pout_transmit_client.write(buf);	//Message Body (message content)
         	}
         } catch(IOException e) {
         	//Catch logic
@@ -903,14 +903,15 @@ public class MainActivity extends ActionBarActivity {
         	msg_dst = pin_rcv.read();	//Get the Message Destination (Binary,a "1" in the ith(0~7) bit stands for the ith client, 0x01 for server)
         	len = 0;
         	int readBytes = 0;
-        	if(msg_type==0){ msg_len = GlobalFunctions.convertToSize(msg_len); }
-        	while(len<msg_len) {
+        	if(msg_type==0){ buf = new byte[GlobalFunctions.convertToSize(msg_len)]; }
+        	else if(msg_type==1){ buf = new byte[msg_len]; }
+        	while(len<buf.length) {
         		Log.i(TAG, "received it! "+len + "_" + msg_len);
-        		readBytes = pin_rcv.read(buf,len,msg_len-len);
+        		readBytes = pin_rcv.read(buf,len,buf.length-len);
         		len = len + readBytes;	//Get the Message Body (message content)
         	}
         	if(msg_type==0) {			//Judge the message type; store it into message if it is a data frame
-        		message = new String(buf,0,msg_len,"UTF-8");
+        		message = new String(buf,0,len,"UTF-8");
         	} else if(msg_type==1) {	//Set the availability of check boxes
         		ClientSum = buf[0];
         		ClientNum = buf[1];
